@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Ideku</title>
+
+  <!-- PWA Meta -->
+  <meta name="description" content="Catat, kelola, dan eksekusi ide kamu." />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Ideku" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- PWA Manifest inline via JS (no separate file needed) -->
+  <link rel="manifest" href="./manifest.json" />
+
+  <!-- App Icon SVG as favicon -->
+  <link rel="icon" type="image/png" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #f5f5f5;
+      color: #111;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .app { min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; width: 100%; }
+
+    /* ── Header ── */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #ececec;
+      position: sticky; top: 0; z-index: 30;
+      width: 100%; overflow: hidden;
+    }
+    .header-inner {
+      max-width: 560px; margin: 0 auto;
+      padding: 20px 16px 0;
+    }
+    .header-top {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: #111; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .brand-icon svg { width: 18px; height: 18px; }
+    .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+    .brand-sub { font-size: 11px; color: #bbb; margin-top: 1px; }
+
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 600;
+      padding: 8px 16px; border-radius: 7px;
+      border: none; cursor: pointer;
+      transition: opacity 0.15s, background 0.12s;
+      letter-spacing: -0.2px;
+    }
+    .btn:hover { opacity: 0.78; }
+    .btn-dark { background: #111; color: #fff; }
+    .btn-ghost { background: transparent; color: #aaa; border: 1px solid #e5e5e5; }
+    .btn-ghost:hover { opacity: 1; color: #666; border-color: #ccc; }
+
+    /* Stats */
+    .stats {
+      display: flex;
+      border-top: 1px solid #ececec;
+      margin: 0 -16px;
+    }
+    .stat {
+      flex: 1; padding: 11px 0; text-align: center;
+      border-right: 1px solid #ececec;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 15px; font-weight: 700; color: #111; }
+    .stat-label { font-size: 10px; color: #c0c0c0; margin-top: 1px; letter-spacing: 0.1px; }
+
+    /* ── Content ── */
+    .content { max-width: 560px; margin: 0 auto; padding: 18px 16px 80px; width: 100%; overflow-x: hidden; }
+
+    /* ── Form ── */
+    .form-card {
+      background: #fff; border: 1px solid #ececec;
+      border-radius: 10px; padding: 16px;
+      margin-bottom: 14px;
+      animation: fadeDown 0.16s ease;
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .form-field {
+      width: 100%; background: #f5f5f5;
+      border: 1px solid #ececec; border-radius: 7px;
+      padding: 10px 13px; color: #111;
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      outline: none; display: block;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .form-field + .form-field { margin-top: 8px; }
+    .form-field:focus { border-color: #ccc; background: #fff; }
+    .form-field::placeholder { color: #ccc; }
+    textarea.form-field { resize: none; margin-top: 8px; }
+    .form-row { display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px; align-items: stretch; }
+    select.form-field { flex: 1; cursor: pointer; color: #666; margin-top: 0; height: 42px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23bbb' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; }
+    .btn-submit {
+      width: 100%; background: #111; color: #fff; border: none;
+      border-radius: 7px; padding: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: opacity 0.15s;
+      height: 42px; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-submit:hover { opacity: 0.8; }
+
+    /* ── Filters ── */
+    .filters-wrap { margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .filters.filters-status {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .f-btn {
+      padding: 7px 4px; border-radius: 8px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      text-align: center;
+      background: #fff; color: #aaa; border: 1px solid #e8e8e8;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.1s;
+      width: 100%;
+    }
+    .f-btn:hover { color: #555; border-color: #ccc; }
+    .f-btn.on { background: #111; color: #fff; border-color: #111; }
+    .f-sep { display: none; }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff; border: 1px solid #ececec;
+      border-radius: 10px; padding: 14px 16px;
+      margin-bottom: 7px; cursor: pointer;
+      transition: border-color 0.12s;
+      animation: fadeIn 0.14s ease;
+      width: 100%; box-sizing: border-box;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .card:hover { border-color: #d8d8d8; }
+    .card.done { opacity: 0.42; }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .card-title {
+      font-size: 14px; font-weight: 600; color: #111;
+      line-height: 1.4; letter-spacing: -0.2px;
+    }
+    .card-title.done { text-decoration: line-through; color: #bbb; font-weight: 400; }
+
+    .card-meta {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 6px; margin-top: 7px;
+    }
+    .meta-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .meta-t { font-size: 11.5px; color: #bbb; }
+    .meta-sep { color: #ddd; font-size: 10px; }
+    .meta-pri { font-size: 11px; font-weight: 600; }
+    .meta-date { font-size: 11px; color: #d0d0d0; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+    .btn-del {
+      background: none; border: none; color: #ddd; cursor: pointer;
+      font-size: 17px; padding: 0 3px; flex-shrink: 0;
+      line-height: 1; transition: color 0.12s;
+    }
+    .btn-del:hover { color: #ef4444; }
+
+    /* Expanded */
+    .card-body {
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid #f3f3f3;
+      animation: fadeDown 0.14s ease;
+    }
+    .card-notes { font-size: 13px; color: #999; line-height: 1.65; margin-bottom: 12px; }
+    .card-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+    .act-btn {
+      padding: 4px 12px; border-radius: 5px; font-size: 12px;
+      font-weight: 500; background: #f5f5f5; color: #aaa;
+      border: 1px solid #ececec; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all 0.1s;
+    }
+    .act-btn:hover { color: #555; border-color: #ccc; }
+    .act-btn.on-s { background: #111; color: #fff; border-color: #111; }
+    .act-btn.on-p { font-weight: 700; background: #fff; }
+
+    /* ── Empty ── */
+    .empty { text-align: center; padding: 60px 0; }
+    .empty-ring {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid #e0e0e0; margin: 0 auto 12px;
+    }
+    .empty-txt { font-size: 13px; color: #ccc; }
+
+    /* ── Delete Confirm Modal ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 100; padding: 0;
+      animation: overlayIn 0.15s ease;
+    }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: #fff; border-radius: 16px 16px 0 0;
+      width: 100%; max-width: 560px;
+      padding: 24px 24px 32px;
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .modal-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: #e8e8e8; margin: 0 auto 20px;
+    }
+    .modal-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+    .modal-sub { font-size: 13px; color: #999; margin-bottom: 24px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 8px; }
+    .btn-del-confirm {
+      flex: 1; background: #111; color: #fff; border: none;
+      border-radius: 8px; padding: 11px; font-size: 13px;
+      font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s;
+    }
+    .btn-del-confirm:hover { opacity: 0.8; }
+    .btn-del-cancel {
+      flex: 1; background: transparent; color: #aaa;
+      border: 1px solid #e5e5e5; border-radius: 8px;
+      padding: 11px; font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: color 0.12s;
+    }
+    .btn-del-cancel:hover { color: #555; border-color: #ccc; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 40px; font-size: 13px; color: #ccc; }
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="9" cy="7.5" r="4" stroke="white" stroke-width="1.5"/>
+              <line x1="9" y1="11.5" x2="9" y2="14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="7" y1="15" x2="11" y2="15" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="7.5" y1="16.8" x2="10.5" y2="16.8" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-name">Ideku</div>
+            <div class="brand-sub">Catat · Kelola · Eksekusi</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center" id="header-btn-wrap">
+          <button class="btn btn-ghost" id="btn-menu" onclick="toggleMenu()" style="padding:8px 10px;font-size:16px;line-height:1">⋯</button>
+          <button class="btn btn-dark" id="btn-new" onclick="toggleForm()">+ Ide baru</button>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:560px;margin:0 auto">
+      <div class="stats" id="stats"></div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- Form -->
+    <div class="form-card" id="form-card" style="display:none">
+      <input class="form-field" id="f-title" placeholder="Judul ide..." onkeydown="if(event.key==='Enter')submitIdea()" />
+      <textarea class="form-field" id="f-notes" placeholder="Catatan (opsional)" rows="2"></textarea>
+      <div class="form-row">
+        <select class="form-field" id="f-cat">
+          <option>Bisnis</option><option>Konten</option><option>Belajar</option>
+          <option>Kreatif</option><option>Efisiensi</option><option>Lainnya</option>
+        </select>
+        <select class="form-field" id="f-pri">
+          <option>Tinggi</option><option selected>Sedang</option><option>Rendah</option>
+        </select>
+      </div>
+      <button class="btn-submit" onclick="submitIdea()">Simpan ide</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-wrap">
+      <div class="filters filters-status" id="filters-status"></div>
+      <div class="filters" id="filters-cat"></div>
+    </div>
+
+    <!-- List -->
+    <div id="list"></div>
+  </div>
+</div>
+
+<!-- Menu Dropdown -->
+<div id="menu-dropdown" style="display:none;position:fixed;top:68px;right:16px;z-index:50;background:#fff;border:1px solid #ececec;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.08);min-width:160px;overflow:hidden;">
+  <button onclick="exportIdeas()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'Inter',sans-serif;color:#111;cursor:pointer;border-bottom:1px solid #f5f5f5;font-weight:500;">
+    ↓ Export JSON
+  </button>
+  <button onclick="triggerImport()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'Inter',sans-serif;color:#111;cursor:pointer;font-weight:500;">
+    ↑ Import JSON
+  </button>
+</div>
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="importIdeas(event)" />
+
+<!-- Toast -->
+<div id="toast" style="display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;z-index:200;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.15);"></div>
+
+<!-- Delete Confirm Modal -->
+<div class="overlay" id="modal" style="display:none" onclick="cancelDelete(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Hapus ide ini?</div>
+    <div class="modal-sub" id="modal-sub">Ide yang dihapus tidak bisa dikembalikan.</div>
+    <div class="modal-actions">
+      <button class="btn-del-cancel" onclick="cancelDelete()">Batal</button>
+      <button class="btn-del-confirm" onclick="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+
+// ── IndexedDB ──
+const DB_NAME = "ideku_db", DB_STORE = "ideas", DB_VER = 1;
+let db;
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(DB_STORE)) {
+        d.createObjectStore(DB_STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function getAllIdeas() {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(DB_STORE, "readonly");
+    const req = tx.objectStore(DB_STORE).getAll();
+    req.onsuccess = () => res(req.result.sort((a, b) => b.id - a.id));
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function putIdea(idea) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(DB_STORE, "readwrite");
+    const req = tx.objectStore(DB_STORE).put(idea);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function deleteIdeaDB(id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(DB_STORE, "readwrite");
+    const req = tx.objectStore(DB_STORE).delete(id);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
+}
+
+// ── State ──
+let ideas = [];
+let filterStatus = null; // null = semua status
+let filterCat = "Semua";
+let formVisible = false;
+let pendingDeleteId = null;
+
+const STATUSES = ["Belum", "Sedang", "Selesai"];
+const PRIORITIES = ["Tinggi", "Sedang", "Rendah"];
+const CATEGORIES = ["Bisnis", "Konten", "Belajar", "Kreatif", "Efisiensi", "Lainnya"];
+const STATUS_DOT = { "Belum": "#d1d5db", "Sedang": "#f59e0b", "Selesai": "#10b981" };
+const PRI_COLOR  = { "Tinggi": "#ef4444", "Sedang": "#f59e0b", "Rendah": "#10b981" };
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// ── Render ──
+function renderStats() {
+  const belum = ideas.filter(i => i.status === "Belum").length;
+  const sedang = ideas.filter(i => i.status === "Sedang").length;
+  const selesai = ideas.filter(i => i.status === "Selesai").length;
+  document.getElementById("stats").innerHTML = [
+    { label: "Total", val: ideas.length },
+    { label: "Belum mulai", val: belum },
+    { label: "Sedang jalan", val: sedang },
+    { label: "Selesai", val: selesai },
+  ].map(s => `
+    <div class="stat">
+      <div class="stat-num">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>
+  `).join("");
+}
+
+function renderFilters() {
+  const statusBtns = STATUSES.map(s =>
+    `<button class="f-btn${filterStatus === s ? " on" : ""}" onclick="setFilterStatus('${s}')">${s}</button>`
+  ).join("");
+  const catBtns = ["Semua", ...CATEGORIES].map(c =>
+    `<button class="f-btn${filterCat === c ? " on" : ""}" onclick="setFilterCat('${c}')">${c}</button>`
+  ).join("");
+  document.getElementById("filters-status").innerHTML = statusBtns;
+  document.getElementById("filters-cat").innerHTML = catBtns;
+}
+
+function renderList() {
+  const filtered = ideas.filter(i =>
+    (!filterStatus || i.status === filterStatus) &&
+    (filterCat === "Semua" || i.category === filterCat)
+  );
+  const el = document.getElementById("list");
+  if (filtered.length === 0) {
+    el.innerHTML = `
+      <div class="empty">
+        <div class="empty-ring"></div>
+        <div class="empty-txt">${ideas.length === 0 ? "Belum ada ide. Mulai dari satu!" : "Tidak ada ide di filter ini."}</div>
+      </div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(idea => {
+    const done = idea.status === "Selesai";
+    const priColor = PRI_COLOR[idea.priority] || "#aaa";
+    const statusActions = STATUSES.map(s =>
+      `<button class="act-btn${idea.status === s ? " on-s" : ""}" onclick="updateStatus(${idea.id},'${s}')">${s}</button>`
+    ).join("");
+    const priActions = PRIORITIES.map(p =>
+      `<button class="act-btn${idea.priority === p ? " on-p" : ""}"
+        style="${idea.priority === p ? `color:${PRI_COLOR[p]};border-color:${PRI_COLOR[p]}44` : ""}"
+        onclick="updatePriority(${idea.id},'${p}')">${p}</button>`
+    ).join("");
+    return `
+      <div class="card${done ? " done" : ""}" id="card-${idea.id}" onclick="toggleCard(${idea.id})">
+        <div class="card-top">
+          <div style="flex:1">
+            <div class="card-title${done ? " done" : ""}">${escHtml(idea.title)}</div>
+            <div class="card-meta">
+              <span class="meta-dot" style="background:${STATUS_DOT[idea.status]}"></span>
+              <span class="meta-t">${idea.status}</span>
+              <span class="meta-sep">·</span>
+              <span class="meta-t">${idea.category}</span>
+              <span class="meta-sep">·</span>
+              <span class="meta-pri" style="color:${priColor}">${idea.priority}</span>
+              <span class="meta-date">${fmtDate(idea.id)}</span>
+            </div>
+          </div>
+          <button class="btn-del" onclick="askDelete(event,${idea.id},'${escHtml(idea.title)}')">×</button>
+        </div>
+        <div class="card-body" id="body-${idea.id}" style="display:none" onclick="event.stopPropagation()">
+          ${idea.notes ? `<p class="card-notes">${escHtml(idea.notes)}</p>` : ""}
+          <div class="card-actions">
+            ${statusActions}
+            <div class="f-sep"></div>
+            ${priActions}
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function render() {
+  renderStats();
+  renderFilters();
+  renderList();
+}
+
+// ── Actions ──
+function toggleForm() {
+  formVisible = !formVisible;
+  document.getElementById("form-card").style.display = formVisible ? "block" : "none";
+  document.getElementById("btn-new").textContent = formVisible ? "Batal" : "+ Ide baru";
+  document.getElementById("btn-new").className = formVisible ? "btn btn-ghost" : "btn btn-dark";
+  if (formVisible) setTimeout(() => document.getElementById("f-title").focus(), 50);
+}
+
+function submitIdea() {
+  const title = document.getElementById("f-title").value.trim();
+  if (!title) { document.getElementById("f-title").focus(); return; }
+  const idea = {
+    id: Date.now(),
+    title,
+    notes: document.getElementById("f-notes").value.trim(),
+    category: document.getElementById("f-cat").value,
+    priority: document.getElementById("f-pri").value,
+    status: "Belum",
+  };
+  putIdea(idea).then(() => {
+    ideas.unshift(idea);
+    document.getElementById("f-title").value = "";
+    document.getElementById("f-notes").value = "";
+    document.getElementById("f-cat").value = "Bisnis";
+    document.getElementById("f-pri").value = "Sedang";
+    toggleForm();
+    render();
+  });
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(`body-${id}`);
+  if (!body) return;
+  body.style.display = body.style.display === "none" ? "block" : "none";
+}
+
+function updateStatus(id, status) {
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+  idea.status = status;
+  putIdea(idea).then(() => render());
+}
+
+function updatePriority(id, priority) {
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+  idea.priority = priority;
+  putIdea(idea).then(() => render());
+}
+
+function setFilterStatus(s) { filterStatus = (filterStatus === s) ? null : s; render(); }
+function setFilterCat(c) { filterCat = c; render(); }
+
+// ── Delete with confirmation ──
+function askDelete(e, id, title) {
+  e.stopPropagation();
+  pendingDeleteId = id;
+  document.getElementById("modal-sub").textContent = `"${title}" akan dihapus permanen.`;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function cancelDelete(e) {
+  if (e && e.target !== document.getElementById("modal")) return;
+  pendingDeleteId = null;
+  document.getElementById("modal").style.display = "none";
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  deleteIdeaDB(pendingDeleteId).then(() => {
+    ideas = ideas.filter(i => i.id !== pendingDeleteId);
+    pendingDeleteId = null;
+    document.getElementById("modal").style.display = "none";
+    render();
+  });
+}
+
+// Close modal on ESC
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    document.getElementById("modal").style.display = "none";
+    pendingDeleteId = null;
+  }
+});
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── Menu ──
+let menuOpen = false;
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  document.getElementById("menu-dropdown").style.display = menuOpen ? "block" : "none";
+}
+document.addEventListener("click", e => {
+  if (menuOpen && !e.target.closest("#menu-dropdown") && !e.target.closest("#btn-menu")) {
+    menuOpen = false;
+    document.getElementById("menu-dropdown").style.display = "none";
+  }
+});
+
+// ── Toast ──
+function showToast(msg, duration = 2200) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  t.style.opacity = "1";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.opacity = "0";
+    setTimeout(() => t.style.display = "none", 300);
+  }, duration);
+}
+
+// ── Export ──
+function exportIdeas() {
+  menuOpen = false;
+  document.getElementById("menu-dropdown").style.display = "none";
+  if (ideas.length === 0) { showToast("Tidak ada ide untuk diekspor."); return; }
+  const data = JSON.stringify(ideas, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `ideku-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✓ ${ideas.length} ide berhasil diekspor`);
+}
+
+// ── Import ──
+function triggerImport() {
+  menuOpen = false;
+  document.getElementById("menu-dropdown").style.display = "none";
+  document.getElementById("import-file").value = "";
+  document.getElementById("import-file").click();
+}
+
+function importIdeas(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!Array.isArray(imported)) throw new Error("Format tidak valid");
+      // Merge: skip duplicate ids
+      const existingIds = new Set(ideas.map(i => i.id));
+      const newOnes = imported.filter(i => i.id && i.title && !existingIds.has(i.id));
+      const merged = [...newOnes, ...ideas].sort((a,b) => b.id - a.id);
+      // Save all to IndexedDB
+      Promise.all(merged.map(i => putIdea(i))).then(() => {
+        ideas = merged;
+        render();
+        showToast(`✓ ${newOnes.length} ide baru berhasil diimpor`);
+      });
+    } catch(err) {
+      showToast("✗ File tidak valid. Pastikan format JSON benar.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Service Worker (PWA offline) ──
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+
+// ── Init ──
+openDB().then(() => getAllIdeas()).then(data => {
+  ideas = data;
+  render();
+}).catch(() => {
+  document.getElementById("list").innerHTML = `<div class="loading">Gagal memuat data.</div>`;
+});
+</script>
+</body>
+</html>
