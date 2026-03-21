@@ -234,12 +234,13 @@
     .card-actions { display: flex; flex-direction: column; gap: 8px; }
     .act-row { display: flex; align-items: center; gap: 6px; }
     .act-label { font-size: 10.5px; color: var(--text-faint); font-weight: 500; min-width: 52px; letter-spacing: 0.1px; }
-    .act-btns { display: flex; gap: 5px; }
+    .act-btns { display: flex; gap: 5px; flex-wrap: wrap; }
     .act-btn {
-      padding: 4px 12px; border-radius: 5px; font-size: 12px;
+      padding: 4px 10px; border-radius: 5px; font-size: 11.5px;
       font-weight: 500; background: var(--act-bg); color: var(--text-muted);
       border: 1px solid var(--border); cursor: pointer;
       font-family: 'Inter', sans-serif; transition: all 0.1s;
+      white-space: nowrap;
     }
     .act-btn:hover { color: var(--text); border-color: var(--text-muted); }
     .act-btn.on-s { background: var(--text); color: var(--bg); border-color: var(--text); }
