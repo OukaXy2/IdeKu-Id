@@ -70,6 +70,13 @@
       color: var(--text);
       -webkit-font-smoothing: antialiased;
       transition: background 0.2s, color 0.2s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, select {
+      -webkit-user-select: text;
+      user-select: text;
     }
 
     /* ── Layout ── */
@@ -714,13 +721,29 @@ function breakdownIdea(id) {
   const idea = ideas.find(i => i.id === id);
   if (!idea) return;
   const prompt =
-`Saya punya sebuah ide yang ingin saya wujudkan:
+`## Konteks
+Saya adalah seseorang yang punya banyak ide tapi sering kesulitan memulai eksekusi. Saya menggunakan aplikasi manajemen ide pribadi untuk menyimpan dan mengelola ide-ide saya. Ide berikut sudah saya simpan dan ingin saya wujudkan, tapi saya butuh bantuan untuk memecahnya menjadi langkah-langkah yang bisa langsung dikerjakan.
 
+## Ide
 Judul: ${idea.title}
 Kategori: ${idea.category}
 Prioritas: ${idea.priority}${idea.notes ? `\nCatatan: ${idea.notes}` : ""}
 
-Tolong breakdown ide ini menjadi rencana eksekusi yang konkret. Buat langkah-langkah yang realistis dan actionable, mulai dari langkah pertama yang bisa saya lakukan sekarang.`;
+## Tugas
+Buatkan rencana eksekusi konkret untuk ide ini. Pecah menjadi langkah-langkah kecil yang realistis dan actionable, dimulai dari langkah pertama yang bisa saya lakukan hari ini atau minggu ini.
+
+## Format
+- Tampilkan sebagai daftar bernomor
+- Setiap langkah maksimal 1-2 kalimat, langsung ke intinya
+- Kelompokkan dalam fase jika perlu (misal: Fase 1 - Persiapan, Fase 2 - Eksekusi)
+- Sertakan estimasi waktu per langkah jika memungkinkan
+- Maksimal 10 langkah total
+
+## Batasan
+- Fokus pada langkah yang bisa dilakukan sendiri, tanpa asumsi sumber daya besar
+- Jangan terlalu teoritis — semua langkah harus actionable
+- Sesuaikan dengan konteks kategori: ${idea.category}
+- Gunakan bahasa Indonesia yang santai dan mudah dipahami`;
 
   const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
   window.open(url, "_blank");
