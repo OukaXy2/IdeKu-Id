@@ -154,7 +154,7 @@
     .form-field::placeholder { color: var(--text-faint); }
     textarea.form-field { resize: none; margin-top: 8px; }
     .form-row { display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px; align-items: stretch; }
-    select.form-field { flex: 1; cursor: pointer; color: #666; margin-top: 0; height: 42px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23bbb' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; }
+    select.form-field { flex: 1; min-width: 0; width: 50%; cursor: pointer; color: #666; margin-top: 0; height: 42px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23bbb' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; }
     .btn-submit {
       width: 100%; background: #111; color: #fff; border: none;
       border-radius: 7px; padding: 10px;
@@ -167,21 +167,21 @@
     /* ── Filters ── */
     .filters-wrap { margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
     .filters {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      display: flex;
       gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 2px;
     }
-    .filters.filters-status {
-      grid-template-columns: repeat(3, 1fr);
-    }
+    .filters::-webkit-scrollbar { display: none; }
     .f-btn {
-      padding: 7px 4px; border-radius: 8px;
+      padding: 7px 14px; border-radius: 8px;
       font-size: 12px; font-weight: 500; cursor: pointer;
-      text-align: center;
+      white-space: nowrap; flex-shrink: 0;
       background: var(--surface); color: var(--text-muted); border: 1px solid var(--border2);
       font-family: 'Inter', sans-serif;
       transition: all 0.1s;
-      width: 100%;
     }
     .f-btn:hover { color: var(--text); border-color: var(--text-muted); }
     .f-btn.on { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -231,7 +231,10 @@
       animation: fadeDown 0.14s ease;
     }
     .card-notes { font-size: 13px; color: var(--text-sub); line-height: 1.65; margin-bottom: 12px; }
-    .card-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+    .card-actions { display: flex; flex-direction: column; gap: 8px; }
+    .act-row { display: flex; align-items: center; gap: 6px; }
+    .act-label { font-size: 10.5px; color: var(--text-faint); font-weight: 500; min-width: 52px; letter-spacing: 0.1px; }
+    .act-btns { display: flex; gap: 5px; }
     .act-btn {
       padding: 4px 12px; border-radius: 5px; font-size: 12px;
       font-weight: 500; background: var(--act-bg); color: var(--text-muted);
@@ -295,6 +298,47 @@
     /* Loading */
     .loading { text-align: center; padding: 40px; font-size: 13px; color: var(--text-faint); }
 
+    /* Edit button on card */
+    .btn-edit {
+      background: none; border: none; color: var(--text-faint); cursor: pointer;
+      font-size: 14px; padding: 0 3px; flex-shrink: 0;
+      line-height: 1; transition: color 0.12s;
+    }
+    .btn-edit:hover { color: var(--text-muted); }
+
+    /* Breakdown button */
+    .btn-breakdown {
+      margin-top: 12px; width: 100%;
+      padding: 8px; border-radius: 7px;
+      font-size: 12px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px dashed var(--border2);
+      cursor: pointer; transition: all 0.15s;
+      letter-spacing: -0.1px;
+    }
+    .btn-breakdown:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+      border-style: solid;
+    }
+
+    /* AI action buttons row */
+    .card-ai-row { display: flex; gap: 6px; margin-top: 12px; }
+    .btn-ai {
+      flex: 1; padding: 8px; border-radius: 7px;
+      font-size: 12px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px dashed var(--border2);
+      cursor: pointer; transition: all 0.15s;
+      letter-spacing: -0.1px;
+    }
+    .btn-ai:hover { border-color: var(--text-muted); color: var(--text); border-style: solid; }
+    .btn-ai:disabled { opacity: 0.4; cursor: not-allowed; }
+
     /* ── Dark mode for menu dropdown & toast ── */
     #menu-dropdown {
       background: var(--surface) !important;
@@ -350,11 +394,11 @@
       <textarea class="form-field" id="f-notes" placeholder="Catatan (opsional)" rows="2"></textarea>
       <div class="form-row">
         <select class="form-field" id="f-cat">
-          <option>Bisnis</option><option>Konten</option><option>Belajar</option>
-          <option>Kreatif</option><option>Efisiensi</option><option>Lainnya</option>
+          <option>Dev</option><option>Bisnis</option><option>Konten</option><option>Belajar</option>
+          <option>Kreatif</option><option>Personal</option><option>Belanja</option>
         </select>
         <select class="form-field" id="f-pri">
-          <option>Tinggi</option><option selected>Sedang</option><option>Rendah</option>
+          <option>Penting</option><option selected>Nanti</option><option>Kapan-kapan</option>
         </select>
       </div>
       <button class="btn-submit" onclick="submitIdea()">Simpan ide</button>
@@ -394,6 +438,29 @@
     <div class="modal-actions">
       <button class="btn-del-cancel" onclick="cancelDelete()">Batal</button>
       <button class="btn-del-confirm" onclick="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="overlay" id="edit-modal" style="display:none" onclick="cancelEdit(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Ide</div>
+    <input class="form-field" id="e-title" placeholder="Judul ide..." style="margin-top:4px" onkeydown="if(event.key==='Enter')saveEdit()" />
+    <textarea class="form-field" id="e-notes" placeholder="Catatan (opsional)" rows="2" style="margin-top:8px"></textarea>
+    <div class="form-row" style="margin-bottom:0">
+      <select class="form-field" id="e-cat">
+        <option>Dev</option><option>Bisnis</option><option>Konten</option><option>Belajar</option>
+        <option>Kreatif</option><option>Personal</option><option>Belanja</option>
+      </select>
+      <select class="form-field" id="e-pri">
+        <option>Penting</option><option>Nanti</option><option>Kapan-kapan</option>
+      </select>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-del-cancel" onclick="cancelEdit()">Batal</button>
+      <button class="btn-del-confirm" onclick="saveEdit()">Simpan</button>
     </div>
   </div>
 </div>
@@ -452,12 +519,13 @@ let filterStatus = null; // null = semua status
 let filterCat = "Semua";
 let formVisible = false;
 let pendingDeleteId = null;
+let editingId = null;
 
-const STATUSES = ["Belum", "Sedang", "Selesai"];
-const PRIORITIES = ["Tinggi", "Sedang", "Rendah"];
-const CATEGORIES = ["Bisnis", "Konten", "Belajar", "Kreatif", "Efisiensi", "Lainnya"];
-const STATUS_DOT = { "Belum": "#d1d5db", "Sedang": "#f59e0b", "Selesai": "#10b981" };
-const PRI_COLOR  = { "Tinggi": "#ef4444", "Sedang": "#f59e0b", "Rendah": "#10b981" };
+const STATUSES = ["Belum", "Proses", "Selesai"];
+const PRIORITIES = ["Penting", "Nanti", "Kapan-kapan"];
+const CATEGORIES = ["Dev", "Bisnis", "Konten", "Belajar", "Kreatif", "Personal", "Belanja"];
+const STATUS_DOT = { "Belum": "#d1d5db", "Proses": "#f59e0b", "Selesai": "#10b981" };
+const PRI_COLOR  = { "Penting": "#ef4444", "Nanti": "#f59e0b", "Kapan-kapan": "#10b981" };
 
 function fmtDate(ts) {
   return new Date(ts).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -466,12 +534,12 @@ function fmtDate(ts) {
 // ── Render ──
 function renderStats() {
   const belum = ideas.filter(i => i.status === "Belum").length;
-  const sedang = ideas.filter(i => i.status === "Sedang").length;
+  const sedang = ideas.filter(i => i.status === "Proses").length;
   const selesai = ideas.filter(i => i.status === "Selesai").length;
   document.getElementById("stats").innerHTML = [
     { label: "Total", val: ideas.length },
     { label: "Belum mulai", val: belum },
-    { label: "Sedang jalan", val: sedang },
+    { label: "Proses", val: sedang },
     { label: "Selesai", val: selesai },
   ].map(s => `
     <div class="stat">
@@ -532,14 +600,24 @@ function renderList() {
               <span class="meta-date">${fmtDate(idea.id)}</span>
             </div>
           </div>
+          <button class="btn-edit" onclick="openEdit(event,${idea.id})">✎</button>
           <button class="btn-del" onclick="askDelete(event,${idea.id},'${escHtml(idea.title)}')">×</button>
         </div>
         <div class="card-body" id="body-${idea.id}" style="display:none" onclick="event.stopPropagation()">
           ${idea.notes ? `<p class="card-notes">${escHtml(idea.notes)}</p>` : ""}
           <div class="card-actions">
-            ${statusActions}
-            <div class="f-sep"></div>
-            ${priActions}
+            <div class="act-row">
+              <span class="act-label">Status</span>
+              <div class="act-btns">${statusActions}</div>
+            </div>
+            <div class="act-row">
+              <span class="act-label">Prioritas</span>
+              <div class="act-btns">${priActions}</div>
+            </div>
+          </div>
+          <div class="card-ai-row">
+            <button class="btn-ai" id="btn-perkaya-${idea.id}" onclick="perkayaIdea(${idea.id})">✦ Perkaya Ide</button>
+            <button class="btn-ai" onclick="breakdownIdea(${idea.id})">↗ Breakdown</button>
           </div>
         </div>
       </div>`;
@@ -576,8 +654,8 @@ function submitIdea() {
     ideas.unshift(idea);
     document.getElementById("f-title").value = "";
     document.getElementById("f-notes").value = "";
-    document.getElementById("f-cat").value = "Bisnis";
-    document.getElementById("f-pri").value = "Sedang";
+    document.getElementById("f-cat").value = "Dev";
+    document.getElementById("f-pri").value = "Nanti";
     toggleForm();
     render();
   });
@@ -630,11 +708,103 @@ function confirmDelete() {
   });
 }
 
+// ── Breakdown di Claude ──
+function breakdownIdea(id) {
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+  const prompt =
+`Saya punya sebuah ide yang ingin saya wujudkan:
+
+Judul: ${idea.title}
+Kategori: ${idea.category}
+Prioritas: ${idea.priority}${idea.notes ? `\nCatatan: ${idea.notes}` : ""}
+
+Tolong breakdown ide ini menjadi rencana eksekusi yang konkret. Buat langkah-langkah yang realistis dan actionable, mulai dari langkah pertama yang bisa saya lakukan sekarang.`;
+
+  const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+  window.open(url, "_blank");
+}
+
+// ── Perkaya Ide via Groq (Cloudflare Worker) ──
+const WORKER_URL = "GANTI_DENGAN_URL_WORKER_KAMU";
+
+async function perkayaIdea(id) {
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+
+  const btn = document.getElementById(`btn-perkaya-${id}`);
+  if (btn) { btn.disabled = true; btn.textContent = "Memproses..."; }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: idea.title,
+        notes: idea.notes,
+        category: idea.category,
+        priority: idea.priority,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || "Gagal");
+
+    idea.notes = data.result;
+    await putIdea(idea);
+    render();
+    // Buka kembali card setelah render
+    const body = document.getElementById(`body-${id}`);
+    if (body) body.style.display = "block";
+    showToast("Ide berhasil diperkaya");
+  } catch (err) {
+    showToast("✗ Gagal memperkaya ide. Coba lagi.");
+    if (btn) { btn.disabled = false; btn.textContent = "✦ Perkaya Ide"; }
+  }
+}
+function openEdit(e, id) {
+  e.stopPropagation();
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+  editingId = id;
+  document.getElementById("e-title").value = idea.title;
+  document.getElementById("e-notes").value = idea.notes || "";
+  document.getElementById("e-cat").value = idea.category;
+  document.getElementById("e-pri").value = idea.priority;
+  document.getElementById("edit-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("e-title").focus(), 80);
+}
+
+function cancelEdit(e) {
+  if (e && e.target !== document.getElementById("edit-modal")) return;
+  editingId = null;
+  document.getElementById("edit-modal").style.display = "none";
+}
+
+function saveEdit() {
+  const title = document.getElementById("e-title").value.trim();
+  if (!title) { document.getElementById("e-title").focus(); return; }
+  const idea = ideas.find(i => i.id === editingId);
+  if (!idea) return;
+  idea.title = title;
+  idea.notes = document.getElementById("e-notes").value.trim();
+  idea.category = document.getElementById("e-cat").value;
+  idea.priority = document.getElementById("e-pri").value;
+  putIdea(idea).then(() => {
+    editingId = null;
+    document.getElementById("edit-modal").style.display = "none";
+    render();
+    showToast("Ide berhasil diperbarui");
+  });
+}
+
 // Close modal on ESC
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
     document.getElementById("modal").style.display = "none";
+    document.getElementById("edit-modal").style.display = "none";
     pendingDeleteId = null;
+    editingId = null;
   }
 });
 
